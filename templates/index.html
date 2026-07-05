@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Radar</title>
+    <meta name="description" content="Stay up to date with the latest Google Cloud BigQuery releases, features, changes, and announcements. Custom tweet composer included.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Background Elements for Visual Depth -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <div class="header-content">
+                <div class="brand">
+                    <div class="logo-container">
+                        <i class="fa-solid fa-bolt logo-icon"></i>
+                    </div>
+                    <div>
+                        <h1 id="app-title">BigQuery Release Radar</h1>
+                        <p class="subtitle">Monitor Google Cloud BigQuery updates and broadcast the latest features</p>
+                    </div>
+                </div>
+                
+                <button id="refresh-btn" class="btn btn-primary" title="Refresh Release Notes">
+                    <i class="fa-solid fa-rotate-right btn-icon"></i>
+                    <span>Refresh Feed</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Filters & Controls Section -->
+        <section class="controls-panel card">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search release notes, features, functions...">
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">Filter by Category:</span>
+                <div class="filter-tags">
+                    <button class="filter-tag active" data-category="all">All</button>
+                    <button class="filter-tag" data-category="Feature"><span class="dot dot-feature"></span>Feature</button>
+                    <button class="filter-tag" data-category="Change"><span class="dot dot-change"></span>Change</button>
+                    <button class="filter-tag" data-category="Announcement"><span class="dot dot-announcement"></span>Announcement</button>
+                    <button class="filter-tag" data-category="Breaking"><span class="dot dot-breaking"></span>Breaking</button>
+                    <button class="filter-tag" data-category="Issue"><span class="dot dot-issue"></span>Issue</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Error State -->
+            <div id="error-state" class="error-container card hidden">
+                <i class="fa-solid fa-triangle-exclamation error-icon"></i>
+                <div class="error-details">
+                    <h3>Failed to Fetch Release Notes</h3>
+                    <p id="error-message">Unknown error occurred.</p>
+                </div>
+                <button id="retry-btn" class="btn btn-secondary">Retry Connection</button>
+            </div>
+
+            <!-- Empty / No Results State -->
+            <div id="empty-state" class="empty-container card hidden">
+                <i class="fa-regular fa-folder-open empty-icon"></i>
+                <h3>No Release Notes Found</h3>
+                <p>Try adjusting your search criteria or refresh the feed.</p>
+            </div>
+
+            <!-- Skeleton Loading State -->
+            <div id="skeleton-loader" class="releases-grid">
+                <div class="date-group skeleton-date-group">
+                    <div class="skeleton skeleton-date"></div>
+                    <div class="skeleton-card card">
+                        <div class="skeleton skeleton-badge"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                        <div class="skeleton skeleton-footer"></div>
+                    </div>
+                </div>
+                <div class="date-group skeleton-date-group">
+                    <div class="skeleton skeleton-date"></div>
+                    <div class="skeleton-card card">
+                        <div class="skeleton skeleton-badge"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                        <div class="skeleton skeleton-footer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Content Container -->
+            <div id="releases-container" class="releases-grid hidden">
+                <!-- Dynamically populated release notes go here -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>BigQuery Release Radar &copy; 2026. Data sourced from <a href="https://docs.cloud.google.com/feeds/bigquery-release-notes.xml" target="_blank" rel="noopener noreferrer">Google Cloud Feed</a>.</p>
+        </footer>
+    </div>
+
+    <!-- Tweet Composer Modal -->
+    <div id="tweet-modal" class="modal-backdrop hidden">
+        <div class="modal card">
+            <div class="modal-header">
+                <h2><i class="fa-brands fa-x-twitter"></i> Compose Broadcast</h2>
+                <button class="close-btn" id="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="selected-context">
+                    <div class="context-label">Selected Release:</div>
+                    <div class="context-preview" id="context-preview-text"></div>
+                </div>
+                
+                <div class="tweet-composer-area">
+                    <textarea id="tweet-textarea" rows="5" placeholder="What's happening?"></textarea>
+                    
+                    <div class="composer-meta">
+                        <div class="char-counter-container">
+                            <svg class="progress-ring" width="36" height="36">
+                                <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" r="14" cx="18" cy="18"/>
+                                <circle class="progress-ring__circle" id="progress-ring-circle" stroke="#10b981" stroke-width="3" fill="transparent" r="14" cx="18" cy="18"/>
+                            </svg>
+                            <span id="char-counter">280</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-tweet-btn">Cancel</button>
+                <button class="btn btn-tweet" id="send-tweet-btn">
+                    <i class="fa-brands fa-x-twitter"></i>
+                    <span>Post to X</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

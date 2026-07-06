@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const retryBtn = document.getElementById('retry-btn');
     const emptyState = document.getElementById('empty-state');
     const releasesContainer = document.getElementById('releases-container');
+    const exportCsvBtn = document.getElementById('export-csv-btn');
 
     // Modal Elements
     const tweetModal = document.getElementById('tweet-modal');
@@ -57,8 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const data = await response.json();
             releaseData = data.releases;
+            exportCsvBtn.disabled = releaseData.length === 0;
             renderReleases();
         } catch (error) {
+            exportCsvBtn.disabled = true;
             showError(error.message);
         }
     }
@@ -67,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showLoader() {
         refreshBtn.classList.add('spinning');
         refreshBtn.disabled = true;
+        exportCsvBtn.disabled = true;
         skeletonLoader.classList.remove('hidden');
         releasesContainer.classList.add('hidden');
         errorState.classList.add('hidden');
@@ -137,6 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${update.content}
                         </div>
                         <div class="card-actions">
+                            <button class="copy-action-btn" title="Copy text to clipboard">
+                                <i class="fa-regular fa-copy"></i>
+                                <span>Copy</span>
+                            </button>
                             <button class="tweet-action-btn" title="Tweet this update">
                                 <i class="fa-brands fa-x-twitter"></i>
                                 <span>Tweet Update</span>
@@ -173,6 +181,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     tweetBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         openTweetComposer(entry.date, update.type, update.content, entry.link);
+                    });
+
+                    // Handle Copy button click
+                    const copyBtn = card.querySelector('.copy-action-btn');
+                    copyBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const plainText = getPlainText(update.content).replace(/\s+/g, ' ').trim();
+                        navigator.clipboard.writeText(`[${entry.date}] ${update.type}: ${plainText}`)
+                            .then(() => {
+                                const icon = copyBtn.querySelector('i');
+                                const span = copyBtn.querySelector('span');
+                                icon.className = 'fa-solid fa-check';
+                                span.textContent = 'Copied!';
+                                copyBtn.classList.add('copied');
+                                setTimeout(() => {
+                                    icon.className = 'fa-regular fa-copy';
+                                    span.textContent = 'Copy';
+                                    copyBtn.classList.remove('copied');
+                                }, 2000);
+                            });
                     });
 
                     dateGroup.appendChild(card);
@@ -290,9 +318,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     });
 
+    // Export currently filtered releases to CSV
+    function exportToCSV() {
+        if (!releaseData || releaseData.length === 0) return;
+        
+        let csvRows = [['Date', 'Category', 'Update Content', 'Link']];
+        
+        releaseData.forEach(entry => {
+            const filteredUpdates = entry.updates.filter(update => {
+                const categoryMatch = currentFilter === 'all' || update.type.toLowerCase() === currentFilter.toLowerCase();
+                const plainText = getPlainText(update.content).toLowerCase();
+                const searchMatch = !searchQuery || 
+                                    plainText.includes(searchQuery.toLowerCase()) || 
+                                    update.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    entry.date.toLowerCase().includes(searchQuery.toLowerCase());
+                return categoryMatch && searchMatch;
+            });
+
+            filteredUpdates.forEach(update => {
+                const plainText = getPlainText(update.content).replace(/\s+/g, ' ').trim();
+                const escapedText = plainText.replace(/"/g, '""');
+                csvRows.push([
+                    `"${entry.date}"`,
+                    `"${update.type}"`,
+                    `"${escapedText}"`,
+                    `"${entry.link}"`
+                ]);
+            });
+        });
+
+        const csvContent = csvRows.map(row => row.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        
+        const timestamp = new Date().toISOString().slice(0, 10);
+        link.setAttribute('download', `bigquery_releases_${currentFilter}_${timestamp}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     // Refresh, Retries, Close events
     refreshBtn.addEventListener('click', fetchReleases);
     retryBtn.addEventListener('click', fetchReleases);
+    exportCsvBtn.addEventListener('click', exportToCSV);
     
     closeModalBtn.addEventListener('click', closeTweetComposer);
     cancelTweetBtn.addEventListener('click', closeTweetComposer);

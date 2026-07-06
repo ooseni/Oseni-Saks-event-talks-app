@@ -102,6 +102,12 @@ header {
     gap: 20px;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .brand {
     display: flex;
     align-items: center;
@@ -440,6 +446,23 @@ h1 {
 
 .tweet-action-btn:hover {
     color: #1d9bf0;
+}
+
+.copy-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.copy-action-btn:hover, .copy-action-btn.copied {
+    color: var(--accent-teal);
 }
 
 .update-card.selected .tweet-action-btn {

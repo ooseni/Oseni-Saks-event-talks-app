@@ -27,6 +27,30 @@
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+body.light-theme {
+    --bg-color: #f1f5f9;
+    --card-bg: rgba(255, 255, 255, 0.75);
+    --card-border: rgba(15, 23, 42, 0.08);
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    
+    /* Less vibrant glows for light mode */
+    --accent-blue: #2563eb;
+    --accent-teal: #0d9488;
+    --accent-purple: #7c3aed;
+    --accent-orange: #d97706;
+    --accent-red: #dc2626;
+
+    /* Light Theme category overrides */
+    --cat-feature: #0d9488;
+    --cat-change: #2563eb;
+    --cat-announcement: #7c3aed;
+    --cat-breaking: #dc2626;
+    --cat-issue: #d97706;
+    --cat-update: #64748b;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -187,6 +211,16 @@ h1 {
 
 .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-icon-only {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-icon {
@@ -877,4 +911,105 @@ footer a:hover {
     from { opacity: 1; }
     to { opacity: 0; transform: translateY(-10px); }
 }
+
+/* Light Theme overrides cascading style rules */
+body.light-theme {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+}
+
+body.light-theme .bg-glow {
+    opacity: 0.05;
+}
+
+body.light-theme h1 {
+    background: linear-gradient(to right, #0f172a, #1e293b, #475569);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.light-theme .btn-secondary {
+    background: rgba(15, 23, 42, 0.05);
+    color: var(--text-primary);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .btn-secondary:hover {
+    background: rgba(15, 23, 42, 0.1);
+}
+
+body.light-theme #search-input {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(15, 23, 42, 0.1);
+    color: var(--text-primary);
+}
+
+body.light-theme #search-input:focus {
+    background: #ffffff;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.15);
+}
+
+body.light-theme .filter-tag {
+    background: rgba(15, 23, 42, 0.03);
+    border-color: rgba(15, 23, 42, 0.08);
+    color: var(--text-secondary);
+}
+
+body.light-theme .filter-tag:hover {
+    background: rgba(15, 23, 42, 0.08);
+    color: var(--text-primary);
+}
+
+body.light-theme .filter-tag.active {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: var(--accent-blue);
+    color: #2563eb;
+}
+
+body.light-theme .update-card:hover {
+    border-color: rgba(15, 23, 42, 0.15);
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .update-card.selected {
+    border-color: var(--accent-blue);
+    background: rgba(37, 99, 235, 0.03);
+}
+
+body.light-theme .update-body code {
+    background: rgba(15, 23, 42, 0.05);
+    color: #be123c;
+}
+
+body.light-theme .modal-backdrop {
+    background: rgba(15, 23, 42, 0.3);
+}
+
+body.light-theme .selected-context {
+    background: rgba(15, 23, 42, 0.03);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+body.light-theme .tweet-composer-area {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+body.light-theme #tweet-textarea {
+    color: var(--text-primary);
+}
+
+body.light-theme .progress-ring__circle-bg {
+    stroke: rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .toast {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid var(--accent-teal);
+    border-left-width: 4px;
+    color: var(--text-primary);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+}
+
 

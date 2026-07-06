@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsCount = document.getElementById('results-count');
     const lastUpdated = document.getElementById('last-updated');
     const toastContainer = document.getElementById('toast-container');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
 
     // Modal Elements
     const tweetModal = document.getElementById('tweet-modal');
@@ -348,6 +349,34 @@ document.addEventListener('DOMContentLoaded', () => {
         lastUpdated.classList.remove('hidden');
     }
 
+    // Initialize theme on load
+    function initTheme() {
+        const activeTheme = localStorage.getItem('theme') || 'dark';
+        const icon = themeToggleBtn.querySelector('i');
+        if (activeTheme === 'light') {
+            document.body.classList.add('light-theme');
+            icon.className = 'fa-solid fa-moon';
+        } else {
+            document.body.classList.remove('light-theme');
+            icon.className = 'fa-solid fa-sun';
+        }
+    }
+
+    // Toggle between light and dark themes
+    function toggleTheme() {
+        const icon = themeToggleBtn.querySelector('i');
+        const isLight = document.body.classList.toggle('light-theme');
+        if (isLight) {
+            localStorage.setItem('theme', 'light');
+            icon.className = 'fa-solid fa-moon';
+            showToast("Swapped to light mode");
+        } else {
+            localStorage.setItem('theme', 'dark');
+            icon.className = 'fa-solid fa-sun';
+            showToast("Swapped to dark mode");
+        }
+    }
+
     // Local Storage Caching Loader
     function loadCachedReleases() {
         const cached = localStorage.getItem('bq_releases_cache');
@@ -447,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshBtn.addEventListener('click', fetchReleases);
     retryBtn.addEventListener('click', fetchReleases);
     exportCsvBtn.addEventListener('click', exportToCSV);
+    themeToggleBtn.addEventListener('click', toggleTheme);
     
     closeModalBtn.addEventListener('click', closeTweetComposer);
     cancelTweetBtn.addEventListener('click', closeTweetComposer);
@@ -469,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Init page load: check cache first, then fetch background updates
+    initTheme();
     loadCachedReleases();
     fetchReleases();
 });

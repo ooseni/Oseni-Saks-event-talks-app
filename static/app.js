@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyState = document.getElementById('empty-state');
     const releasesContainer = document.getElementById('releases-container');
     const exportCsvBtn = document.getElementById('export-csv-btn');
+    const clearSearchBtn = document.getElementById('clear-search-btn');
+    const resultsCount = document.getElementById('results-count');
+    const lastUpdated = document.getElementById('last-updated');
+    const toastContainer = document.getElementById('toast-container');
 
     // Modal Elements
     const tweetModal = document.getElementById('tweet-modal');
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tweetTextarea = document.getElementById('tweet-textarea');
     const charCounter = document.getElementById('char-counter');
     const progressRingCircle = document.getElementById('progress-ring-circle');
+    const tweetWarningMsg = document.getElementById('tweet-warning-msg');
 
     // Circular Progress Setup for Character Counter
     const radius = progressRingCircle.r.baseVal.value;
@@ -58,11 +63,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const data = await response.json();
             releaseData = data.releases;
+            
+            // Save to Local Storage Cache
+            localStorage.setItem('bq_releases_cache', JSON.stringify(releaseData));
+            updateLastUpdatedTime(new Date());
+            
             exportCsvBtn.disabled = releaseData.length === 0;
             renderReleases();
         } catch (error) {
             exportCsvBtn.disabled = true;
-            showError(error.message);
+            // If we have cached data, don't show full screen error, just toast it
+            if (releaseData && releaseData.length > 0) {
+                hideLoader();
+                showToast("Failed to refresh. Showing offline cached version.");
+            } else {
+                showError(error.message);
+            }
         }
     }
 
@@ -96,6 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
         releasesContainer.innerHTML = '';
         
         let hasContent = false;
+        let matchCount = 0;
+        let totalCount = 0;
 
         releaseData.forEach(entry => {
             // Filter the updates in this entry
@@ -115,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (filteredUpdates.length > 0) {
                 hasContent = true;
+                matchCount += filteredUpdates.length;
 
                 // Create date grouping element
                 const dateGroup = document.createElement('div');
@@ -190,11 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         const plainText = getPlainText(update.content).replace(/\s+/g, ' ').trim();
                         navigator.clipboard.writeText(`[${entry.date}] ${update.type}: ${plainText}`)
                             .then(() => {
+                                // Double feedback: button text change + global toast popup
                                 const icon = copyBtn.querySelector('i');
                                 const span = copyBtn.querySelector('span');
                                 icon.className = 'fa-solid fa-check';
                                 span.textContent = 'Copied!';
                                 copyBtn.classList.add('copied');
+                                showToast("Update copied to clipboard");
                                 setTimeout(() => {
                                     icon.className = 'fa-regular fa-copy';
                                     span.textContent = 'Copy';
@@ -209,6 +230,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 releasesContainer.appendChild(dateGroup);
             }
         });
+
+        // Update Filter/Result count indicator
+        if (searchQuery || currentFilter !== 'all') {
+            resultsCount.textContent = `Found ${matchCount} matching update${matchCount === 1 ? '' : 's'} out of ${totalCount}`;
+            resultsCount.classList.remove('hidden');
+        } else {
+            resultsCount.classList.add('hidden');
+        }
 
         if (hasContent) {
             releasesContainer.classList.remove('hidden');
@@ -285,16 +314,55 @@ document.addEventListener('DOMContentLoaded', () => {
             charCounter.style.color = 'var(--accent-red)';
             sendTweetBtn.disabled = true;
             sendTweetBtn.style.opacity = 0.5;
+            tweetWarningMsg.classList.remove('hidden');
         } else if (remaining <= 20) {
             progressRingCircle.style.stroke = 'var(--accent-orange)';
             charCounter.style.color = 'var(--accent-orange)';
             sendTweetBtn.disabled = false;
             sendTweetBtn.style.opacity = 1;
+            tweetWarningMsg.classList.add('hidden');
         } else {
             progressRingCircle.style.stroke = 'var(--accent-teal)';
             charCounter.style.color = 'var(--text-secondary)';
             sendTweetBtn.disabled = false;
             sendTweetBtn.style.opacity = 1;
+            tweetWarningMsg.classList.add('hidden');
+        }
+    }
+
+    // Dynamic global toast popup
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    // Last updated timestamp display
+    function updateLastUpdatedTime(date) {
+        lastUpdated.textContent = `Last checked: ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        lastUpdated.classList.remove('hidden');
+    }
+
+    // Local Storage Caching Loader
+    function loadCachedReleases() {
+        const cached = localStorage.getItem('bq_releases_cache');
+        if (cached) {
+            try {
+                releaseData = JSON.parse(cached);
+                exportCsvBtn.disabled = releaseData.length === 0;
+                renderReleases();
+                
+                // Show offline last checks if cached
+                const mockDate = new Date();
+                updateLastUpdatedTime(mockDate);
+            } catch (e) {
+                localStorage.removeItem('bq_releases_cache');
+            }
         }
     }
 
@@ -311,11 +379,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Search input handler with debounce
     let searchTimeout;
     searchInput.addEventListener('input', (e) => {
+        if (e.target.value) {
+            clearSearchBtn.classList.remove('hidden');
+        } else {
+            clearSearchBtn.classList.add('hidden');
+        }
+        
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             searchQuery = e.target.value;
             renderReleases();
         }, 200);
+    });
+
+    // Clear search keyword text
+    clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchQuery = '';
+        clearSearchBtn.classList.add('hidden');
+        renderReleases();
     });
 
     // Export currently filtered releases to CSV
@@ -386,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeTweetComposer();
     });
 
-    // Init page load
+    // Init page load: check cache first, then fetch background updates
+    loadCachedReleases();
     fetchReleases();
 });

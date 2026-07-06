@@ -34,6 +34,7 @@
                 </div>
                 
                 <div class="header-actions">
+                    <span id="last-updated" class="last-updated-text hidden"></span>
                     <button id="export-csv-btn" class="btn btn-secondary" title="Export Current View to CSV" disabled>
                         <i class="fa-solid fa-file-csv"></i>
                         <span>Export CSV</span>
@@ -51,6 +52,7 @@
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
                 <input type="text" id="search-input" placeholder="Search release notes, features, functions...">
+                <button id="clear-search-btn" class="clear-search-btn hidden" title="Clear search"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="filter-group">
@@ -63,6 +65,9 @@
                     <button class="filter-tag" data-category="Breaking"><span class="dot dot-breaking"></span>Breaking</button>
                     <button class="filter-tag" data-category="Issue"><span class="dot dot-issue"></span>Issue</button>
                 </div>
+            </div>
+            <div class="results-meta">
+                <span id="results-count" class="results-count-text hidden"></span>
             </div>
         </section>
 
@@ -137,6 +142,7 @@
                     <textarea id="tweet-textarea" rows="5" placeholder="What's happening?"></textarea>
                     
                     <div class="composer-meta">
+                        <span id="tweet-warning-msg" class="tweet-warning-msg hidden"><i class="fa-solid fa-triangle-exclamation"></i> Limit exceeded</span>
                         <div class="char-counter-container">
                             <svg class="progress-ring" width="36" height="36">
                                 <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="3" fill="transparent" r="14" cx="18" cy="18"/>
@@ -155,7 +161,9 @@
                     <span>Post to X</span>
                 </button>
             </div>
-        </div>
     </div>
+    
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
 </body>
 </html>

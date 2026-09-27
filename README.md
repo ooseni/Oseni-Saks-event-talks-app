@@ -50,8 +50,8 @@ A premium, glassmorphic web application built with Python Flask and vanilla HTML
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/ooseni/Oseni-Saks-event-talks-app.git
-   cd Oseni-Saks-event-talks-app
+   git clone https://github.com/ooseni/bigquery-release-radar.git
+   cd bigquery-release-radar
    ```
 
 2. **Set up a Virtual Environment**:

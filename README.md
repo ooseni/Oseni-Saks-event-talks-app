@@ -105,3 +105,7 @@ bq-releases-notes/
 ├── requirements.txt    # Application dependencies
 └── README.md           # Project documentation
 ```
+
+## License
+
+Released under the [MIT License](LICENSE).
